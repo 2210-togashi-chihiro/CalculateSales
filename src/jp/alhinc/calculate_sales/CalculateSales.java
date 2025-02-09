@@ -170,6 +170,7 @@ public class CalculateSales {
 	 */
 	private static boolean writeFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales) {
 		// ※ここに書き込み処理を作成してください。(処理内容3-1) 読み込みと書き込み似てるなとかでたどり着けるか
+//		おためしでコミットしたい。
 		BufferedWriter bw = null;
 		try {
 			File file = new File(path, fileName);

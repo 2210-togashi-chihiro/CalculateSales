@@ -40,55 +40,47 @@ public class CalculateSales {
 			return;
 		}
 
-
-		// ※ここから(売り上げファイル)集計処理を作成してください。(処理内容2-1、2-2)
+		// 処理内容2-1. 売上ファイル検索
 		File[] files = new File(args[0]).listFiles();
-
 		List<File> rcdFiles = new ArrayList<>();
-		// この辺も2-1にあり。(変数名に困ることはなさそう)
 
-		//　2-1　穴埋め1つ目(ファイルパス)
 		for(int i = 0; i < files.length ; i++) {
 			String fileName = files[i].getName() ;
-			//	Stringであることのヒントはない。何が取れるか自分で調べるか。
+			//「String fileName =」は転記無し。Stringになることは自力でたどり着く。
 			//	おそらく初の命名ポイント。変数名が命名規則に沿ってるか確認
 
+			//穴埋め箇所「if(ファイル名.matches(正規表現構⽂)) 」
 			if(files[i].isFile() && fileName.matches("^[0-9]{8}.rcd$")) {
-				//2-1穴埋め2つ目（ファイル名）　と　2-1穴埋め2つ目（正規記表現構文）
 				rcdFiles.add(files[i]);
-				// この辺も2-1にあり。ここがTrueで落ちてくる場所だっていうことはくっきり理解してほしい。
 			}
+
 		}
 
-		//処理内容2-2 売上ファイルの読み込み処理　※読み込みなので書き込みより前、2-1のfor文より後
+		//処理内容2-2 売上ファイル読込処理　※読み込みなので書き込みより前、2-1の検索より後
+		//支店定義ファイル読込(readFileメソッド)を参考に。
+		BufferedReader br = null;
+
 		for(int i = 0; i < rcdFiles.size(); i++) {
-			//支店定義ファイル読み込み(readFileメソッド)を参考に売上ファイルの中身を読み込みます。
-			BufferedReader br = null;
 			try {
 				br = new BufferedReader(new FileReader(rcdFiles.get(i)));
 				ArrayList<String> fileContents = new ArrayList<>();
 
 				String line;
-				// 一行ずつ読み込む
+				// 一行ずつ読み込む　※売上を加算しないといけないため、支店定義のようにそのままマップに落とすわけにはいかない。
 				while((line = br.readLine()) != null) {
 					fileContents.add(line);
 				}
-				//ファイル名を取得
-				String FileName = rcdFiles.get(i).getName();
-				//支店名を取得
+
+				//支店名を取得(売上集計ファイルの中身＝branchで1行、Saleで1行の計2行を記録)
 				String branchCode = fileContents.get(0);
 
-				//売上ファイルから読み込んだ売上金額をMapに加算していくために、型の変換を行います。
-				//※詳細は後述で説明(処理内容2－2　型の変換)
+				//型の変換
 				long fileSale = Long.parseLong(fileContents.get(1));
-				//読み込んだ売上⾦額を加算します。
-				//※詳細は後述で説明
+				//読み込んだ売上⾦額(fileSale)を加算、Mapに追加
 				Long saleAmount = branchSales.get(branchCode) + fileSale;
-
-				//加算した売上⾦額をMapに追加します。
-				// 処理内容2-2には明記なし。putは自分で探してくる感じかな？　catchとfinallyも自分で持ってくる（参考記載あり）
-				//finallyまで書いて、処理内容2-2が終わる。
 				branchSales.put(branchCode, saleAmount);
+
+				//catchとfinallyも自分で持ってきて、処理内容2-2が終わる
 			}catch(IOException e) {
 				System.out.println(UNKNOWN_ERROR);
 				return;
@@ -104,7 +96,6 @@ public class CalculateSales {
 					}
 				}
 			}
-			return;
 		}
 
 
@@ -125,7 +116,7 @@ public class CalculateSales {
 	 * @return 読み込み可否
 	 */
 	private static boolean readFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales) {
-		BufferedReader br = null;
+		BufferedReader br = null;  //これってtryの外で宣言してる理由とかがあったんだっけ。
 
 		try {
 			File file = new File(path, fileName);
@@ -135,10 +126,11 @@ public class CalculateSales {
 			String line;
 			// 一行ずつ読み込む
 			while((line = br.readLine()) != null) {
-				// ※ここの読み込み処理を変更してください。(処理内容1-2)
-				//文字列を分割
+				// 処理内容1-2.　文字列を分割、格納
 				String[] items = line.split(",");
-				System.out.println(line);
+				branchNames.put(items[0], items[1]);
+				branchSales.put(items[0], 0L);
+				//このシステムは前日の売上金額を繰り越さないため、売上金額は「0」円で追加。
 			}
 
 		} catch(IOException e) {

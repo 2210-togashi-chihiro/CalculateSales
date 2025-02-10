@@ -99,7 +99,7 @@ public class CalculateSales {
 		}
 
 
-		// 支店別集計ファイル書き込み処理　※writeFileメソッドを呼び出し返却
+		// 処理内容3-1. 支店別集計ファイル書き込み処理　※writeFileメソッドを呼び出し返却
 		if(!writeFile(args[0], FILE_NAME_BRANCH_OUT, branchNames, branchSales)) {
 			return;
 		}
@@ -160,9 +160,9 @@ public class CalculateSales {
 	 * @param 支店コードと売上金額を保持するMap
 	 * @return 書き込み可否
 	 */
+
+	// 処理内容3-1. 支店別集計ファイル書き込み処理
 	private static boolean writeFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales) {
-		// ※ここに書き込み処理を作成してください。(処理内容3-1) 読み込みと書き込み似てるなとかでたどり着けるか
-//		おためしでコミットしたい。
 		BufferedWriter bw = null;
 		try {
 			File file = new File(path, fileName);
@@ -172,21 +172,21 @@ public class CalculateSales {
 //			FileWriter fw = new FileWriter(file);
 //			br = new BufferedWriter(fw);               支店定義ファイル読み込み処理そのまま持ってくるとこの書き方もありそう
 
-			String line;
-			//拡張for文で回す。(3-1 Mapから全てのKeyを取得する方法 )
+			//拡張for文
 			for(String key : branchNames.keySet()) {
-				//◆!!!!ここから続き　記載してね◆
+				bw.write(key + "," +branchNames.get(key) + "," + branchSales.get(key));
+			      bw.newLine();
+					System.out.println("書き込み中...");
 			}
-
 		} catch(IOException e) {
 			System.out.println(UNKNOWN_ERROR);
 			return false;
 		} finally {
-			// ファイルを開いている場合
 			if(bw != null) {
 				try {
 					// ファイルを閉じる
 					bw.close();
+					System.out.println("書き込み終了。ファイル " + fileName + " を閉じます。");
 				} catch(IOException e) {
 					System.out.println(UNKNOWN_ERROR);
 					return false;

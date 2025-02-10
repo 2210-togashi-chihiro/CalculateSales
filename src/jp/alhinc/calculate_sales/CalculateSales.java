@@ -55,7 +55,21 @@ public class CalculateSales {
 			}
 
 		}
+/*	★★★ここから記述してください★★★
+		//エラー処理2-1.　売上ファイル名 連番チェック
+		for(int i = 0; i < rcdFiles.size() - 1; i++) {
 
+			int former = Integer.parseInt(rcdFiles.substring(0, 8));
+			int latter = Integer.parseInt(次のファイル名.substring(0, 8));
+
+		      //⽐較する2つのファイル名の先頭から数字の8⽂字を切り出し、int型に変換します。
+			if((latter - former) != 1) {
+				//2つのファイル名の数字を⽐較して、差が1ではなかったら、
+				//エラーメッセージをコンソールに表⽰します。
+			}
+		}
+
+*/
 		//処理内容2-2 売上ファイル読込処理　※読み込みなので書き込みより前、2-1の検索より後
 		//支店定義ファイル読込(readFileメソッド)を参考に。
 		BufferedReader br = null;
@@ -116,10 +130,17 @@ public class CalculateSales {
 	 * @return 読み込み可否
 	 */
 	private static boolean readFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales) {
-		BufferedReader br = null;  //これってtryの外で宣言してる理由とかがあったんだっけ。
+		BufferedReader br = null;  //これってtryの外で宣言してる理由とかがあったんだっけ　→　Finarryでも使ってるからでは。
 
 		try {
 			File file = new File(path, fileName);
+
+			//エラー処理1. 存在チェック
+			if(!file.exists()) {
+				System.out.println(FILE_NOT_EXIST);
+				return false;
+			}
+
 			FileReader fr = new FileReader(file);
 			br = new BufferedReader(fr);
 
@@ -128,9 +149,16 @@ public class CalculateSales {
 			while((line = br.readLine()) != null) {
 				// 処理内容1-2.　文字列を分割、格納
 				String[] items = line.split(",");
+
+				//エラー処理1. 支店定義ファイルのフォーマット確認
+				if((items.length != 2) || (!items[0].matches("^[0-9]{3}$"))){
+					System.out.println(FILE_INVALID_FORMAT);
+					return false;
+				}
+
 				branchNames.put(items[0], items[1]);
 				branchSales.put(items[0], 0L);
-				//このシステムは前日の売上金額を繰り越さないため、売上金額は「0」円で追加。
+				//このシステムは前日の売上金額を繰り越さないため、読込時の売上金額は「0」円で追加。
 			}
 
 		} catch(IOException e) {
@@ -175,8 +203,8 @@ public class CalculateSales {
 			//拡張for文
 			for(String key : branchNames.keySet()) {
 				bw.write(key + "," +branchNames.get(key) + "," + branchSales.get(key));
-			      bw.newLine();
-					System.out.println("書き込み中...");
+			    bw.newLine();
+				System.out.println("書き込み中...");
 			}
 		} catch(IOException e) {
 			System.out.println(UNKNOWN_ERROR);

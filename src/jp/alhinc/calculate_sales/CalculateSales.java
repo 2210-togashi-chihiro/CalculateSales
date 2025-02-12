@@ -55,12 +55,12 @@ public class CalculateSales {
 			}
 
 		}
-/*	★★★ここから記述してください★★★
+
 		//エラー処理2-1.　売上ファイル名 連番チェック
 		for(int i = 0; i < rcdFiles.size() - 1; i++) {
 
-			int former = Integer.parseInt(rcdFiles.substring(0, 8));
-			int latter = Integer.parseInt(次のファイル名.substring(0, 8));
+			int former = Integer.parseInt(rcdFiles.get(i).getName().substring(0, 8));
+			int latter = Integer.parseInt(rcdFiles.get(i ++).getName().substring(0, 8));
 
 		      //⽐較する2つのファイル名の先頭から数字の8⽂字を切り出し、int型に変換します。
 			if((latter - former) != 1) {
@@ -69,7 +69,7 @@ public class CalculateSales {
 			}
 		}
 
-*/
+
 		//処理内容2-2 売上ファイル読込処理　※読み込みなので書き込みより前、2-1の検索より後
 		//支店定義ファイル読込(readFileメソッド)を参考に。
 		BufferedReader br = null;
@@ -89,6 +89,7 @@ public class CalculateSales {
 				String branchCode = fileContents.get(0);
 
 				//型の変換
+				//ファイルから読み込んだ情報は、内容にかかわらず⼀律で⽂字列(String) として扱われます
 				long fileSale = Long.parseLong(fileContents.get(1));
 				//読み込んだ売上⾦額(fileSale)を加算、Mapに追加
 				Long saleAmount = branchSales.get(branchCode) + fileSale;
@@ -111,6 +112,7 @@ public class CalculateSales {
 				}
 			}
 		}
+
 
 
 		// 処理内容3-1. 支店別集計ファイル書き込み処理　※writeFileメソッドを呼び出し返却

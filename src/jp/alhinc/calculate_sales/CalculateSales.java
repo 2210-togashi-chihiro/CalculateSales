@@ -40,7 +40,7 @@ public class CalculateSales {
 	 * @param コマンドライン引数
 	 */
 	public static void main(String[] args) {
-		//【argsチェック】
+		//エラー処理3 【argsチェック】
 		if (args.length != 1) {
 			System.out.println(UNKNOWN_ERROR);
 			return;
@@ -66,13 +66,14 @@ public class CalculateSales {
 			return;
 		}
 
-		// 処理内容2-1. 売上ファイル検索
+		// 処理内容2-1 売上ファイル検索
 		File[] files = new File(args[0]).listFiles();
 		List<File> rcdFiles = new ArrayList<>();
 
 		for(int i = 0; i < files.length ; i++) {
 			String fileName = files[i].getName() ;
 
+			//エラー処理3 【ファイルなのかチェック】files[i].isFile()書き足し
 			if(files[i].isFile() && fileName.matches("^[0-9]{8}.rcd$")) {
 				rcdFiles.add(files[i]);
 			}
@@ -80,11 +81,11 @@ public class CalculateSales {
 
 		Collections.sort(rcdFiles);
 
-		//エラー処理2-1.　売上ファイル名 連番チェック
+		//エラー処理2-1 売上ファイル名 連番チェック
 		for(int i = 0; i < rcdFiles.size() - 1; i++) {
 
 			int former = Integer.parseInt(rcdFiles.get(i).getName().substring(0, 8));
-			int latter = Integer.parseInt(rcdFiles.get(i ++).getName().substring(0, 8));
+			int latter = Integer.parseInt(rcdFiles.get(++i).getName().substring(0, 8));
 
 			if((latter - former) != 1) {
 				System.out.println(NOT_CONSECUTIVE_NUMBERS);
@@ -98,47 +99,57 @@ public class CalculateSales {
 
 		for(int i = 0; i < rcdFiles.size(); i++) {
 			try {
+				//BufferedReader作成
 				br = new BufferedReader(new FileReader(rcdFiles.get(i)));
+				//読込結果格納リスト作成
 				ArrayList<String> fileContents = new ArrayList<>();
 
 				String line;
-				// 一行ずつ読み込む
+				// 一行ずつ読込
 				while((line = br.readLine()) != null) {
+					//読込結果を格納(fileContents 0個目：支店コード　1個目：金額)
 					fileContents.add(line);
 				}
 
-				//【行数チェック】
+				//エラー処理2【行数チェック】
 				if(fileContents.size() != 3) {
 					System.out.println(SALEFILE_INVALID_FORMAT);
 				}
 
-				//支店名を取得(売上集計ファイルの中身＝branchで1行、Saleで1行の計2行を記録)
+				//処理内容2-2かエラー処理 支店名を取得(売上集計ファイルの中身＝branchで1行、Saleで1行の計2行を記録)
 				String branchCode = fileContents.get(0);
+				//商品定義追加 支店名を取得(売上集計ファイルの中身＝branchで1行、Saleで1行の計2行を記録)
+				String commodityCode = fileContents.get(1);
 
-				//【支店コードの存在チェック】↑の中身が支店定義ファイルにあるかチェック
+				//エラー処理2【支店コードの存在チェック】↑の中身が支店定義ファイルにあるかチェック
 				if (!branchSales.containsKey(branchCode)) {
 					System.out.println("支店コード " + branchCode + " は支店定義ファイルに存在しません。");
 				}
 
-				//【売上金額-数字チェック】
+				//エラー処理3 【売上金額-数字チェック】
 				if(!fileContents.get(2).matches("^[0-9]+$")) {
 					System.out.println(UNKNOWN_ERROR);
 					return;
 				}
 
-				//型の変換
-				//ファイルから読み込んだ情報は、内容にかかわらず一律でStringとして扱われます
+				//処理内容2-2 型の変換(String→long)
+				//ファイルから読み込んだ情報(readlineで読んだ文字)は、一律でStringとして扱われる
 				long fileSale = Long.parseLong(fileContents.get(2));
 
-				//読み込んだ売上⾦額(fileSale)を加算
+				//処理内容2-2 読み込んだ売上⾦額(fileSale)を加算
 				Long saleAmount = branchSales.get(branchCode) + fileSale;
+				//商品定義追加 読み込んだ売上⾦額(fileSale)を加算
+				Long commoditySaleAmount = commoditySales.get(commodityCode) + fileSale;
 
-				//【桁数溢れチェック】
+				//エラー処理2【桁数溢れチェック】
 				if(saleAmount >= 10000000000L){
 					System.out.println(TOTAL_AMOUNT_OVERFLOW);
 				}
-				//Map追加
+
+				//処理内容2-2 支店別集計Map追加
 				branchSales.put(branchCode, saleAmount);
+				//商品定義追加 商品別集計Map追加
+				commoditySales.put(commodityCode, commoditySaleAmount);
 
 			}catch(IOException e) {
 				System.out.println(UNKNOWN_ERROR);
@@ -163,10 +174,9 @@ public class CalculateSales {
 		}
 
 		// 商品定義で追加. 支店別集計ファイル書き込み処理
-		if(!writeFile(args[0], FILE_NAME_COMMODITY_OUT, branchNames, branchSales)) {
+		if(!writeFile(args[0], FILE_NAME_COMMODITY_OUT, commodityNames, commoditySales)) {
 			return;
 		}
-
 	}
 
 	/**
@@ -194,7 +204,7 @@ public class CalculateSales {
 			br = new BufferedReader(fr);
 
 			String line;
-			// 一行ずつ読み込む
+			// 一行ずつ読込
 			while((line = br.readLine()) != null) {
 				// 処理内容1-2.　文字列を分割、格納
 				String[] items = line.split(",");

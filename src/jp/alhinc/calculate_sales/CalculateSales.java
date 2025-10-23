@@ -122,7 +122,7 @@ public class CalculateSales {
 				String commodityCode = fileContents.get(1);
 
 				//エラー処理2【支店コードの存在チェック】↑の中身が支店定義ファイルにあるかチェック
-				if (!branchSales.containsKey(branchCode)) {
+				if (!branchNames.containsKey(branchCode)) {
 					System.out.println("支店コード " + branchCode + " は支店定義ファイルに存在しません。");
 				}
 
